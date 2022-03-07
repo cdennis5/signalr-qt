@@ -12,7 +12,7 @@ CONFIG   += precompile_header
 
 TARGET = SignalRClient
 TEMPLATE = lib
-
+#CONFIG += staticlib
 
 DEFINES += SIGNALR_LIBRARY
 

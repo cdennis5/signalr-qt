@@ -40,7 +40,9 @@
 
 #include <QEventLoop>
 #include "Helper/Helper.h"
+#ifdef Q_OS_LINUX
 #include <unistd.h>
+#endif
 #include <Connection_p.h>
 
 namespace P3 { namespace SignalR { namespace Client {
