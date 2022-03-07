@@ -1,46 +1,55 @@
 SignalR-QT
 ==========
 
-## Donate
-[![Donate with Bitcoin](https://en.cryptobadges.io/badge/micro/1Ck4XgAxys3aBjdesKQQ62zx7m4vozUest)](https://en.cryptobadges.io/donate/1Ck4XgAxys3aBjdesKQQ62zx7m4vozUest)
+This is a Qt C++ library used to create cross platform client apps for servers that employ Microsoft's ASP.Net SignalR (https://github.com/SignalR).  While MS now offers an official C++ library for this purpose, they do not support mobile platforms.  This solution, however, works everywhere Qt does, including iOS and Android!  
 
-Donate DogeCoin: DPVz6RSAJrXZqTF4sGXpS1dqwvU36hSaAQ
+This is a fork from the original version of the library.  That source maybe found at: https://github.com/p3root/signalr-qt
 
+The intended consumers of this fork (who shall remain anonymous...) already have an integration with this library setup within a different project.  That other project contains the "public" headers along with pre-built .dll, .lib, .so, and .a files produced from this source.  
 
-Signalr-Qt
-====
+Instructions
+============
 
-This is an C++ implementation of Microsofts ASP.Net SignalR. (https://github.com/SignalR).
+1. To begin with, clone this repository *recursively* to ensure the submodules are also cloned.
 
-For questions please send me an email (patrik.pfaffenbauer@p3.co.at) or conatct me via skype (patrik.pfaffenbauer)
+```
+git clone --recursive https://github.com/QDroneDev/signalr-qt.git
+```
 
-Please clone the repository recursive. Otherwise the submodules will not be cloned, and you can't build the libs.
+2. To rebuild the **SignalRClient** library, for a given platform, first rebuild its **dependencies**, found in the nested projects.
 
-git clone --recursive https://github.com/p3root/signalr-qt.git
+Open each of the following NESTED projects in Qt Creator.  Configure them to build (i.e. define the .pro.user) as needed. Be sure to **DISABLE Shadow Build**!
 
-Then just run qmake and make.
+- `ThirdParty\QtExtJson\QtExtJson.pro`
 
-Client
-======
+- `ThirdParty\QHttpServer\src\src.pro`
 
-Supported Transports:
+- `ThirdParty\QtWebSockets\src\websockets\websockets.pro`
 
-* Long Polling
-* Server Sent Events
-* WebSockets
+3. Build each in DEBUG mode and RELEASE mode.  
 
-All transports supports SSL as well.
+4. For both debug and release, build both STATIC and SHARED versions.  
 
-Tested on:
- * Linux Qt 4.8.2 and QT 5.1 (x86_64)
- * Windows Qt 5.2 (x64)
+By default, the QMake is setup for shared builds.  To switch to static, comment out the `CONFIG += sharedlib` line in each .pro, and uncomment the `CONFIG += staticlib` line.
 
-Server
-=======
-See the following repository (https://github.com/p3root/signalr-cpp)
+5. After each build, copy the target file produced (e.g. the .dll, .a, etc.) to another directory, and then delete all the garbage now intermingled with the source (due to disabling shadow build), especially the `MAKE` files.  You might want to "git clean" the repo, to make this easy.
+
+6. To build the **SignalRClient** files, all of those dependencies produced need to be copied back to the (questionable...) directory where they ended up upon their build (i.e. mixed into the source).  You must match DEBUG/RELEASE/SHARED/STATIC for each corresponding target build of SignalRClient!  To then build that open: `SignalRLibraries\SignalRClient\SignalRClient.pro`
+
+7.  Repeat all these steps, with the given tiny tweak you need, oh about 50 billion times if you need an update for every context.  Hopefully, you didn't have anything better to do for a few days...  Here are the *dimensions*, for which you need to produce a different version, in every possible combination:
+
+- PLATFORM (WINDOWS, MAC, LINUX, iOS, ANDROID, CUSTOM (embedded) OSes...) 
+
+- CPU ARCHITECTURE
+
+- DEBUG vs RELEASE
+
+- SHARED vs STATIC
+
+Note: It seems that some build contexts will allow you to produce pure static builds of your final target .exe, and others need all shared libraries (which must then be distributed along side it), and others are some mixed bag of that.  
 
 LICENSE
-======
+=======
 
 Copyright (c) 2013-2014, p3root - Patrik Pfaffenbauer (patrik.pfaffenbauer@p3.co.at)
 All rights reserved.
