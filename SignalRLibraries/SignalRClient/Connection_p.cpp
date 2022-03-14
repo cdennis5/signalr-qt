@@ -96,7 +96,8 @@ void ConnectionPrivate::start(ClientTransport* transport, bool autoReconnect)
     if(_state == SignalR::Disconnected)
     {
         changeState(SignalR::Disconnected, SignalR::Connecting);
-        _transport->negotiate();
+        if( _virtualNegotiateResponse.isNull() ) _transport->negotiate();
+        else negotiateCompleted( _virtualNegotiateResponse.data() );
     }
 }
 

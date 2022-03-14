@@ -117,6 +117,18 @@ void Connection::setAdditionalQueryString(QList<QPair<QString, QString> > lst)
     d->setAdditionalQueryString(lst);
 }
 
+bool Connection::isVirtualNegotiation()
+{
+    Q_D(Connection);
+    return d->isVirtualNegotiation();
+}
+
+void Connection::setVirtualNegotiation(const QSharedPointer<NegotiateResponse> response)
+{
+    Q_D(Connection);
+    d->setVirtualNegotiation( response );
+}
+
 const KeepAliveData *Connection::getKeepAliveData()
 {
     Q_D(Connection);

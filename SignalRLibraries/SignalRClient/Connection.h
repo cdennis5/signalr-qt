@@ -50,6 +50,7 @@
     #include <QSslConfiguration>
 #endif
 
+#include "Transports/NegotiateResponse.h"
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -149,6 +150,12 @@ public:
 
     const QList<QPair<QString, QString> > &getAdditionalQueryString();
     void setAdditionalQueryString(QList<QPair<QString, QString> > lst);
+
+    bool isVirtualNegotiation();
+    ///
+    /// \brief call setVirtualNegotiation prior to start() to skip an actual negotiation sequence
+    ///
+    void setVirtualNegotiation(const QSharedPointer<NegotiateResponse> response);
 
     const KeepAliveData *getKeepAliveData();
 

@@ -105,6 +105,9 @@ public:
     const QList< QPair<QString, QString> >& getAdditionalQueryString() { return _additionalQueryString; }
     void setAdditionalQueryString(QList<QPair<QString, QString> > lst);
 
+    bool isVirtualNegotiation() const { return !_virtualNegotiateResponse.isNull(); }
+    // Note: call setVirtualNegotiation prior to start() to skip an actual negotiation sequence
+    void setVirtualNegotiation(const QSharedPointer<NegotiateResponse> response) { _virtualNegotiateResponse = response; }
     void negotiateCompleted(const NegotiateResponse *negotiateResponse);
 
 #ifndef QT_NO_NETWORKPROXY
@@ -180,6 +183,7 @@ private:
     QString _protocolVersion;
     SignalR::State _state;
     int _postTimeoutMs;
+    QSharedPointer<NegotiateResponse> _virtualNegotiateResponse;
 
     HeartbeatMonitor *_monitor;
     QMutex _stateLocker;
