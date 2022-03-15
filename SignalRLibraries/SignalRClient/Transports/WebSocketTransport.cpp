@@ -119,48 +119,9 @@ void WebSocketTransport::onDisconnected()
     {
         return;
     }
-    QAbstractSocket::SocketError er = _webSocket->error();
-
-    QSharedPointer<SignalException> error;
-
-    switch(er)
-    {
-    case QAbstractSocket::RemoteHostClosedError:
-        error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::RemoteHostClosedConnection));
-        break;
-    case QAbstractSocket::ConnectionRefusedError:
-        error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::ConnectionRefusedError));
-        break;
-    case QAbstractSocket::NetworkError:
-        error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::UnknownNetworkError));
-        break;
-    case QAbstractSocket::SocketAccessError:
-    case QAbstractSocket::SocketResourceError:
-    case QAbstractSocket::SocketTimeoutError:
-    case QAbstractSocket::DatagramTooLargeError:
-    case QAbstractSocket::AddressInUseError:
-    case QAbstractSocket::SocketAddressNotAvailableError:
-    case QAbstractSocket::UnsupportedSocketOperationError:
-    case QAbstractSocket::UnfinishedSocketOperationError:
-    case QAbstractSocket::ProxyAuthenticationRequiredError:
-    case QAbstractSocket::SslHandshakeFailedError:
-    case QAbstractSocket::ProxyConnectionRefusedError:
-    case QAbstractSocket::ProxyConnectionClosedError:
-    case QAbstractSocket::ProxyConnectionTimeoutError:
-    case QAbstractSocket::ProxyNotFoundError:
-    case QAbstractSocket::ProxyProtocolError:
-    case QAbstractSocket::UnknownSocketError:
-    case QAbstractSocket::HostNotFoundError:
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
-    case QAbstractSocket::OperationError:
-    case QAbstractSocket::SslInternalError:
-    case QAbstractSocket::SslInvalidUserDataError:
-    case QAbstractSocket::TemporaryError:
-#endif
-
-        error = QSharedPointer<SignalException>(new SignalException(_webSocket->errorString(), SignalException::UnkownError));
-        break;
-    }
+    QSharedPointer<SignalException> error(
+        WebSocketTransport::toSignalException(
+            _webSocket->error(), _webSocket->errorString() ) );
 
     if(_webSocket->state() == QAbstractSocket::ConnectedState)
         _webSocket->close();
@@ -214,9 +175,60 @@ void WebSocketTransport::onIgnoreSsl(QList<QSslError> errors)
 }
 #endif
 
+QSharedPointer<SignalException> WebSocketTransport::toSignalException(
+    const QAbstractSocket::SocketError &er, const QString &msg )
+{
+    QSharedPointer<SignalException> error;
+    switch(er)
+    {
+    case QAbstractSocket::RemoteHostClosedError:
+        error = QSharedPointer<SignalException>(new SignalException(msg, SignalException::RemoteHostClosedConnection));
+        break;
+    case QAbstractSocket::ConnectionRefusedError:
+        error = QSharedPointer<SignalException>(new SignalException(msg, SignalException::ConnectionRefusedError));
+        break;
+    case QAbstractSocket::NetworkError:
+        error = QSharedPointer<SignalException>(new SignalException(msg, SignalException::UnknownNetworkError));
+        break;
+    case QAbstractSocket::SocketAccessError:
+    case QAbstractSocket::SocketResourceError:
+    case QAbstractSocket::SocketTimeoutError:
+    case QAbstractSocket::DatagramTooLargeError:
+    case QAbstractSocket::AddressInUseError:
+    case QAbstractSocket::SocketAddressNotAvailableError:
+    case QAbstractSocket::UnsupportedSocketOperationError:
+    case QAbstractSocket::UnfinishedSocketOperationError:
+    case QAbstractSocket::ProxyAuthenticationRequiredError:
+    case QAbstractSocket::SslHandshakeFailedError:
+    case QAbstractSocket::ProxyConnectionRefusedError:
+    case QAbstractSocket::ProxyConnectionClosedError:
+    case QAbstractSocket::ProxyConnectionTimeoutError:
+    case QAbstractSocket::ProxyNotFoundError:
+    case QAbstractSocket::ProxyProtocolError:
+    case QAbstractSocket::UnknownSocketError:
+    case QAbstractSocket::HostNotFoundError:
+    #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+    case QAbstractSocket::OperationError:
+    case QAbstractSocket::SslInternalError:
+    case QAbstractSocket::SslInvalidUserDataError:
+    case QAbstractSocket::TemporaryError:
+    #endif
+        error = QSharedPointer<SignalException>(new SignalException(msg, SignalException::UnkownError));
+        break;
+    }
+    return error;
+}
+
 void WebSocketTransport::onError(QAbstractSocket::SocketError)
 {
-    _connection->emitLogMessage(_webSocket->errorString(), SignalR::Warning);
+    // Original
+    //_connection->emitLogMessage(_webSocket->errorString(), SignalR::Warning);
+
+    // Revised
+    QSharedPointer<SignalException> error(
+        WebSocketTransport::toSignalException(
+            _webSocket->error(), _webSocket->errorString() ) );
+    _connection->onError( error );
 }
 
 void WebSocketTransport::onTextMessageReceived(QString str)

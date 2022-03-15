@@ -42,6 +42,9 @@ private Q_SLOTS:
 #endif
 
 private:
+    static QSharedPointer<SignalException> toSignalException(
+        const QAbstractSocket::SocketError &er, const QString &msg );
+
     QWebSocket *_webSocket;
     bool _started;
     QTimer _retryTimerTimeout;
