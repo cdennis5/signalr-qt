@@ -49,6 +49,7 @@ void WebSocketTransport::start(QString)
         {
             url.setScheme("ws");
         }
+        connect(_webSocket, SIGNAL(hostFound()), this, SLOT(onHostFound()));
         connect(_webSocket, SIGNAL(connected()), this, SLOT(onConnected()));
         connect(_webSocket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
         connect(_webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
@@ -103,6 +104,11 @@ void WebSocketTransport::lostConnection(ConnectionPrivate *con)
 {
     HttpBasedTransport::lostConnection(con);
     retry();
+}
+
+void WebSocketTransport::onHostFound()
+{
+    _connection->emitLogMessage("WebSocket: Host found", SignalR::Info);
 }
 
 void WebSocketTransport::onConnected()

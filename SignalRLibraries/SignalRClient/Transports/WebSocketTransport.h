@@ -28,6 +28,7 @@ public:
     bool supportsKeepAlive() OVERRIDE_M { return true; }
 
 private Q_SLOTS:
+    void onHostFound();
     void onConnected();
     void onDisconnected();
     void onError(QAbstractSocket::SocketError);
