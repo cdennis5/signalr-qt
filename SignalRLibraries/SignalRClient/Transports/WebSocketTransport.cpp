@@ -59,6 +59,7 @@ void WebSocketTransport::start(QString)
 
         connect(_webSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onIgnoreSsl(QList<QSslError>)));
 
+        _connection->emitLogMessage("websocket open url: " + url.toDisplayString(), SignalR::Info);
         _webSocket->open(url);
     }
 
