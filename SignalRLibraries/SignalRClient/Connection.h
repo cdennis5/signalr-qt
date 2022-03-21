@@ -145,8 +145,17 @@ public:
     ///
     bool getAutoReconnect() const;
 
+    bool useDefaultContextPaths();
+    void setDefaultContextPaths(const bool isEnabled);
+
+    bool useDefaultHttpHeaders();
+    void setDefaultHttpHeaders(const bool isEnabled);
+
     const QList<QPair<QString, QString> > &getAdditionalHttpHeaders();
     void setAdditionalHttpHeaders(QList<QPair<QString, QString> > lst);
+
+    bool useDefaultQueryString();
+    void setDefaultQueryString(const bool isEnabled);
 
     const QList<QPair<QString, QString> > &getAdditionalQueryString();
     void setAdditionalQueryString(QList<QPair<QString, QString> > lst);

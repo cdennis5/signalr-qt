@@ -44,6 +44,9 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
     _transport(0),
     _count(0),
     _keepAliveData(0),
+    _isDefaultContextPaths(true),
+    _isDefaultHttpHeaders(true),
+    _isDefaultQueryStrings(true),
     _stateLocker(QMutex::Recursive),
     q_ptr(connection)
 {

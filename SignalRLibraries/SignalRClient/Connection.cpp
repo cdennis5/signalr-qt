@@ -93,6 +93,42 @@ QString Connection::onSending()
     return d->onSending();
 }
 
+bool Connection::useDefaultContextPaths()
+{
+    Q_D(Connection);
+    return d->useDefaultContextPaths();
+}
+
+void Connection::setDefaultContextPaths(const bool isEnabled)
+{
+    Q_D(Connection);
+    d->setDefaultContextPaths(isEnabled);
+}
+
+bool Connection::useDefaultHttpHeaders()
+{
+    Q_D(Connection);
+    return d->useDefaultHttpHeaders();
+}
+
+void Connection::setDefaultHttpHeaders(const bool isEnabled)
+{
+    Q_D(Connection);
+    d->setDefaultHttpHeaders(isEnabled);
+}
+
+bool Connection::useDefaultQueryString()
+{
+    Q_D(Connection);
+    return d->useDefaultQueryString();
+}
+
+void Connection::setDefaultQueryString(const bool isEnabled)
+{
+    Q_D(Connection);
+    d->setDefaultQueryString(isEnabled);
+}
+
 const QList<QPair<QString, QString> > &Connection::getAdditionalHttpHeaders()
 {
     Q_D(Connection);

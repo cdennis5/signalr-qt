@@ -24,7 +24,8 @@ void WebSocketTransport::start(QString)
     if(_webSocket == 0)
     {
         _webSocket = new QWebSocket();
-        _webSocket->setAdditonalQueryString(_connection->getAdditionalQueryString());
+        // Better off done at this level, since the rest of the related logic is here
+        //_webSocket->setAdditonalQueryString(_connection->getAdditionalQueryString());
         _webSocket->setAddtionalHeaders(_connection->getAdditionalHttpHeaders());
 #ifndef QT_NO_NETWORKPROXY
         _webSocket->setProxy(_connection->getProxySettings());
@@ -33,22 +34,35 @@ void WebSocketTransport::start(QString)
         _webSocket->setSslConfiguration(_connection->getSslConfiguration());
 #endif
 
-        QString conOrRecon = "connect";
-        if(_started)
-            conOrRecon = "reconnect";
-        QString connectUrl = _connection->getWebSocketsUrl() + "/" +conOrRecon;
-        connectUrl += TransportHelper::getReceiveQueryString(_connection, getTransportType());
+        QString connectUrl(_connection->getWebSocketsUrl());
 
-        QUrl url = QUrl(connectUrl);
+        if(_connection->useDefaultContextPaths())
+            connectUrl += QString("/") + QString(_started ? "reconnect" : "connect");
 
-        if(url.scheme() == "https")
+        if(_connection->useDefaultQueryString())
+            connectUrl += TransportHelper::getReceiveQueryString(_connection, getTransportType());
+
+        if(!_connection->getAdditionalQueryString().isEmpty())
         {
-            url.setScheme("wss");
+            connectUrl += (_connection->useDefaultQueryString() ? "&" : "?");
+            bool isFirst(true);
+            foreach(auto pair, _connection->getAdditionalQueryString() )
+            {
+                if(isFirst) isFirst=false;
+                else connectUrl += "&";
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
+                connectUrl += pair.first + "=" + pair.second.toHtmlEscaped();
+#else
+                connectUrl += pair.first + "=" + pair.second.toAscii();
+#endif
+            }
         }
-        else
-        {
-            url.setScheme("ws");
-        }
+
+        QUrl url(connectUrl);
+
+        const QString scheme(url.scheme().toLower());
+        url.setScheme( scheme == "wss" || scheme == "https" ? "wss" : "ws" );
+
         connect(_webSocket, SIGNAL(hostFound()), this, SLOT(onHostFound()));
         connect(_webSocket, SIGNAL(connected()), this, SLOT(onConnected()));
         connect(_webSocket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
@@ -58,6 +72,8 @@ void WebSocketTransport::start(QString)
         connect(_webSocket, SIGNAL(pong(quint64,QByteArray)), this, SLOT(onPong(quint64,QByteArray)));
 
         connect(_webSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(onIgnoreSsl(QList<QSslError>)));
+
+        connect(_webSocket, SIGNAL(debugMessageAvailable(QString)), this, SLOT(onDebugMessageAvailable(QString)));
 
         _connection->emitLogMessage("websocket open url: " + url.toDisplayString(), SignalR::Info);
         _webSocket->open(url);
@@ -262,6 +278,11 @@ void WebSocketTransport::onTextMessageReceived(QString str)
 void WebSocketTransport::onPong(quint64, QByteArray)
 {
     _connection->emitLogMessage("on pong", SignalR::Debug);
+}
+
+void WebSocketTransport::onDebugMessageAvailable(QString message)
+{
+    _connection->emitLogMessage(message, SignalR::Debug);
 }
 
 }}}

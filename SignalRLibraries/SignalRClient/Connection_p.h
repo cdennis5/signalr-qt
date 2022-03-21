@@ -99,8 +99,17 @@ public:
     void setConnectionState(NegotiateResponse negotiateResponse);
     virtual QString onSending();
 
+    bool useDefaultContextPaths(){ return _isDefaultContextPaths; }
+    void setDefaultContextPaths(const bool isEnabled){_isDefaultContextPaths=isEnabled;}
+
+    bool useDefaultHttpHeaders(){ return _isDefaultHttpHeaders; }
+    void setDefaultHttpHeaders(const bool isEnabled){_isDefaultHttpHeaders=isEnabled;}
+
     const QList< QPair<QString, QString> >& getAdditionalHttpHeaders() { return _additionalHeaders; }
     void setAdditionalHttpHeaders(QList<QPair<QString, QString> > lst);
+
+    bool useDefaultQueryString(){ return _isDefaultQueryStrings; }
+    void setDefaultQueryString(const bool isEnabled){_isDefaultQueryStrings=isEnabled;}
 
     const QList< QPair<QString, QString> >& getAdditionalQueryString() { return _additionalQueryString; }
     void setAdditionalQueryString(QList<QPair<QString, QString> > lst);
@@ -184,6 +193,9 @@ private:
     SignalR::State _state;
     int _postTimeoutMs;
     QSharedPointer<NegotiateResponse> _virtualNegotiateResponse;
+    bool _isDefaultContextPaths;
+    bool _isDefaultHttpHeaders;
+    bool _isDefaultQueryStrings;
 
     HeartbeatMonitor *_monitor;
     QMutex _stateLocker;

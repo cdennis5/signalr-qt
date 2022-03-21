@@ -36,6 +36,8 @@ private Q_SLOTS:
     void onTextMessageReceived(QString);
     void onPong(quint64, QByteArray);
 
+    void onDebugMessageAvailable(QString);
+
     void reconnectTimerTick();
 
 #ifndef QT_NO_SSL
