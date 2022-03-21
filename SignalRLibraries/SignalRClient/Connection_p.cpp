@@ -295,9 +295,13 @@ bool ConnectionPrivate::stop(int timeoutMs)
     QMutexLocker l(&_stateLocker);
 
     changeState(_state, SignalR::Disconnecting);
-    bool abort = _transport->abort(timeoutMs);
-    _transport->deleteLater();
-    _transport = 0;
+    bool stopped(true);
+    if(_transport)
+    {
+        stopped = _transport->abort(timeoutMs);
+        _transport->deleteLater();
+        _transport = 0;
+    }
 
     _connectionId = "";
     _connectionToken = "";
@@ -305,9 +309,10 @@ bool ConnectionPrivate::stop(int timeoutMs)
 
     _monitor->stop();
 
+    _autoReconnect = false; // prevent reconnect upon explicit disconnect
     changeState(_state, SignalR::Disconnected);
 
-    return abort;
+    return stopped;
 }
 
 void ConnectionPrivate::negotiateCompleted(const NegotiateResponse* negotiateResponse)
