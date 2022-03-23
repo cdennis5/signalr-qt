@@ -162,7 +162,7 @@ public:
 
     bool isVirtualNegotiation();
     ///
-    /// \brief call setVirtualNegotiation prior to start() to skip an actual negotiation sequence
+    /// \brief counterpart to "skip_negotiation" found in sibling libraries
     ///
     void setVirtualNegotiation(const QSharedPointer<NegotiateResponse> response);
 

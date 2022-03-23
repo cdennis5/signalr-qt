@@ -74,6 +74,7 @@ public:
     const QString &getConnectionToken() const;
     const QString &getGroupsToken() const;
     ClientTransport* getTransport();
+    bool isWebSocketTransport();
     const QString &getUrl() const;
     const QString &getMessageId() const;
 

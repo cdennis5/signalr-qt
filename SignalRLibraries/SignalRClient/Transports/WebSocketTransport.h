@@ -23,9 +23,14 @@ public:
 
     virtual const QString &getTransportType() OVERRIDE_M;
 
+    bool isHandShakeCompleted();
+
     void lostConnection(ConnectionPrivate *con) OVERRIDE_M;
 
     bool supportsKeepAlive() OVERRIDE_M { return true; }
+
+Q_SIGNALS:
+    void handShakeCompleted();
 
 private Q_SLOTS:
     void onHostFound();
@@ -49,7 +54,7 @@ private:
         const QAbstractSocket::SocketError &er, const QString &msg );
 
     QWebSocket *_webSocket;
-    bool _started;
+    bool _started, _shakingHands, _handShakeCompleted;
     QTimer _retryTimerTimeout;
 };
 

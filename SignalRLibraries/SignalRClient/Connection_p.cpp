@@ -34,6 +34,7 @@
 #include "Transports/HttpClient.h"
 #include "Helper/Helper.h"
 #include "Transports/AutoTransport.h"
+#include "Transports/WebSocketTransport.h"
 #include <QSharedPointer>
 #include <QThread>
 
@@ -99,8 +100,11 @@ void ConnectionPrivate::start(ClientTransport* transport, bool autoReconnect)
     if(_state == SignalR::Disconnected)
     {
         changeState(SignalR::Disconnected, SignalR::Connecting);
-        if( _virtualNegotiateResponse.isNull() ) _transport->negotiate();
-        else negotiateCompleted( _virtualNegotiateResponse.data() );
+        const bool isSkipNegotiate(!_virtualNegotiateResponse.isNull() &&
+                                   isWebSocketTransport()); // only permitted for websockets connections
+        if( isSkipNegotiate )
+            negotiateCompleted( _virtualNegotiateResponse.data() );
+        else _transport->negotiate();
     }
 }
 
@@ -223,6 +227,12 @@ ClientTransport *ConnectionPrivate::getTransport()
     return _transport;
 }
 
+bool ConnectionPrivate::isWebSocketTransport()
+{
+    return _transport &&
+        dynamic_cast<const WebSocketTransport*>(_transport) != NULL;
+}
+
 const QString &ConnectionPrivate::getUrl() const
 {
     return _host;
@@ -317,10 +327,15 @@ bool ConnectionPrivate::stop(int timeoutMs)
 
 void ConnectionPrivate::negotiateCompleted(const NegotiateResponse* negotiateResponse)
 {
+    // original, not certain on the details of which / why certain versions are supported...
+    //if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2" || negotiateResponse->protocolVersion == "1.5"))
 
-    if( !(negotiateResponse->protocolVersion == "1.3" || negotiateResponse->protocolVersion == "1.2" || negotiateResponse->protocolVersion == "1.5"))
+    const QString protocolVer(negotiateResponse->protocolVersion);
+    bool isVerToDblOk;
+    const double protocolVersion(protocolVer.toDouble(&isVerToDblOk));
+    if(!isVerToDblOk || ((int)protocolVersion)!=1)
     {
-        QSharedPointer<SignalException> invalidProtocol = QSharedPointer<SignalException>(new SignalException("Invalid protocol version", SignalException::InvalidProtocolVersion));
+        QSharedPointer<SignalException> invalidProtocol = QSharedPointer<SignalException>(new SignalException("Invalid protocol version: " + protocolVer, SignalException::InvalidProtocolVersion));
         onError(invalidProtocol);
         stop();
     }

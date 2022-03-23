@@ -7,13 +7,15 @@ namespace P3 { namespace SignalR { namespace Client {
 
 WebSocketTransport::WebSocketTransport() :
     HttpBasedTransport(),
-    _webSocket(0)
-{
-    _started = false;
-}
+    _webSocket(0),
+    _started(false),
+    _shakingHands(false),
+    _handShakeCompleted(false)
+{}
 
 void WebSocketTransport::start(QString)
 {
+    _handShakeCompleted = false;
      _connection->updateLastRetryTime();
 
     if(_webSocket)
@@ -78,7 +80,6 @@ void WebSocketTransport::start(QString)
         _connection->emitLogMessage("websocket open url: " + url.toDisplayString(), SignalR::Info);
         _webSocket->open(url);
     }
-
 }
 
 void WebSocketTransport::send(QString data)
@@ -95,6 +96,7 @@ void WebSocketTransport::send(QString data)
 
 bool WebSocketTransport::abort(int timeoutMs)
 {
+    _handShakeCompleted = false;
     Q_UNUSED(timeoutMs);
     if(_webSocket)
     {
@@ -117,6 +119,9 @@ const QString &WebSocketTransport::getTransportType()
     return type;
 }
 
+bool WebSocketTransport::isHandShakeCompleted()
+{ return _handShakeCompleted; }
+
 void WebSocketTransport::lostConnection(ConnectionPrivate *con)
 {
     HttpBasedTransport::lostConnection(con);
@@ -131,9 +136,36 @@ void WebSocketTransport::onHostFound()
 void WebSocketTransport::onConnected()
 {
     QSharedPointer<SignalException> e;
-
     Q_EMIT transportStarted(e);
     _started = true;
+
+    bool isVerToDblOk;
+    const int protocolVersion((int)_connection->getProtocolVersion().toDouble(&isVerToDblOk));
+    const QByteArray recordSeperator("\u001E");
+    const QVariantMap handshakeRequestMap({
+          {"protocol", "json"}
+        , {"version", protocolVersion}
+    });
+    const QByteArray handshakeRequest(
+        QJsonDocument::fromVariant(handshakeRequestMap).toJson(QJsonDocument::Compact)
+        + recordSeperator );
+    const int bytesWritten(_webSocket->write(handshakeRequest));
+    const bool isFlushed(_webSocket->flush());
+    if( bytesWritten == handshakeRequest.size() && isFlushed )
+    {
+        _shakingHands = true;
+        _connection->emitLogMessage("WebSocketTransport handshake sent: "
+            + QString(handshakeRequest), SignalR::Info);
+    }
+    else
+    {
+        _shakingHands = false;
+        QSharedPointer<SignalException> error(
+            WebSocketTransport::toSignalException(
+                QAbstractSocket::SocketError::OperationError,
+                "WebSocket write error" ) );
+        _connection->onError(error);
+    }
 }
 
 void WebSocketTransport::onDisconnected()
@@ -256,7 +288,7 @@ void WebSocketTransport::onError(QAbstractSocket::SocketError)
 
 void WebSocketTransport::onTextMessageReceived(QString str)
 {
-    _connection->emitLogMessage("WebSocket: Message received", SignalR::Debug);
+    _connection->emitLogMessage("WebSocket: Message received: " + str, SignalR::Debug);
 
     bool timedOut = false, disconnected = false;
     quint64 messageId = 0;
@@ -267,12 +299,22 @@ void WebSocketTransport::onTextMessageReceived(QString str)
 
     QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, str, &timedOut, &disconnected, &messageId);
 
-    if(!e.isNull())
+    if(e.isNull())
     {
-        _connection->onError(e);
-    }
+        if( _shakingHands )
+        {
+            _handShakeCompleted = true;
+            Q_EMIT handShakeCompleted();
+        }
 
+    }
+    else _connection->onError(e);
+
+    // TODO: emitting a "sent" signal on "receive"?!
+    // This is a horribly misleading signal name!
     Q_EMIT onMessageSentCompleted(e, messageId);
+
+    _shakingHands = false;
 }
 
 void WebSocketTransport::onPong(quint64, QByteArray)
