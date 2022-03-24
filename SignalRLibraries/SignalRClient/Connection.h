@@ -208,6 +208,7 @@ Q_SIGNALS:
     void onConnectionSlow();
     void logMessage(QString, int severity);
     void messageSentCompleted(QSharedPointer<SignalException> ex);
+    void invocationReceived(QString target, QVariantList arguments, QString invocationId);
     void exceptionReceived(QString message, QString stackTrace);
     void keepAliveReceived();
     void retryReceived();

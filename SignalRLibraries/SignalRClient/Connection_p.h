@@ -95,6 +95,8 @@ public:
     void onError(QSharedPointer<SignalException> exp);
 
     virtual void onReceived(QVariant &data);
+    void onInvocationReceived(const QString &target, const QVariantList &arguments, const QString &invocationId);
+
     void setGroupsToken(const QString &token);
     void setMessageId(const QString &messageId);
     void setConnectionState(NegotiateResponse negotiateResponse);

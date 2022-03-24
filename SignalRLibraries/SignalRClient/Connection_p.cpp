@@ -211,6 +211,12 @@ void ConnectionPrivate::onReceived(QVariant &data)
     q->onReceived(data);
 }
 
+void ConnectionPrivate::onInvocationReceived(const QString &target, const QVariantList &arguments, const QString &invocationId)
+{
+    Q_Q(Connection);
+    Q_EMIT q->invocationReceived(target, arguments, invocationId);
+}
+
 void ConnectionPrivate::setGroupsToken(const QString &token)
 {
     _groupsToken = token;

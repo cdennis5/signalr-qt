@@ -53,6 +53,9 @@ public:
     static QString getReceiveQueryString(ConnectionPrivate *connection, QString transport);
     static QSharedPointer<SignalException> processMessages(ConnectionPrivate *connection, QString raw, bool* timedOut, bool* disconnected, quint64 *messageId=0);
 
+    // replacement for the original...
+    static QSharedPointer<SignalException> processMessages(ConnectionPrivate *connection, const QString &raw);
+    static QSharedPointer<SignalException> processMessages(ConnectionPrivate *connection, const QByteArray &raw);
 
     static const NegotiateResponse* parseNegotiateHttpResponse(const QString& httpResponse);
 };

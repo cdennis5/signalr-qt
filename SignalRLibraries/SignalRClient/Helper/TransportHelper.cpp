@@ -28,11 +28,28 @@
  *  SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <QJsonDocument>
+#include <QJsonObject>
+
 #include "TransportHelper.h"
 #include <QtGlobal>
 #include "Helper.h"
 #include "Connection_p.h"
 #include "Transports/NegotiateResponse.h"
+
+const QByteArray EMPTY, RECORD_SEPERATOR( "\u001E" );
+
+const QString
+      TYPE_KEY          ( "type"         )
+    , INVOCATION_ID_KEY ( "invocationId" )
+    , TARGET_KEY        ( "target"       )
+    , ARGUMENT_KEY      ( "arguments"    )
+;
+
+const int
+      NONE_TYPE       ( -1 )
+    , INVOCATION_TYPE (  1 )
+;
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -167,6 +184,52 @@ QSharedPointer<SignalException> TransportHelper::processMessages(ConnectionPriva
     }
 
     return e;
+}
+
+QSharedPointer<SignalException> TransportHelper::processMessages(
+    ConnectionPrivate *connection, const QString &raw )
+{
+    const QByteArray bytes( raw.toLocal8Bit() );
+    return TransportHelper::processMessages( connection, bytes );
+}
+
+QSharedPointer<SignalException> TransportHelper::processMessages(
+    ConnectionPrivate *connection, const QByteArray &raw )
+{
+    connection->emitLogMessage(
+        "received message: " + QString(raw), SignalR::Debug );
+
+    // Convert the raw message to a QVariantMap
+    QByteArray scrubbed( raw );
+    scrubbed.replace( RECORD_SEPERATOR, EMPTY );
+    QJsonParseError fromJsonError;
+    const QJsonObject jsonObj(
+        QJsonDocument::fromJson( scrubbed, &fromJsonError ).object() );
+    if( fromJsonError.error != QJsonParseError::NoError )
+    {
+        const QString errMsg( fromJsonError.errorString() +
+           "\nJSON parsing error occurred at offset position: " +
+               QString::number( fromJsonError.offset ) +
+           "\nRaw data:\n\n" + QString( raw ) );
+        return QSharedPointer<SignalException>( new SignalException(
+            errMsg, SignalException::UnkownContentError ) );
+    }
+    const QVariantMap msgMap( jsonObj.toVariantMap() );
+
+    // Get the message type and conditionally react to it
+    const int msgType( msgMap.value( TYPE_KEY, NONE_TYPE ).toInt() );
+    switch( msgType )
+    {
+    case INVOCATION_TYPE:
+        connection->onInvocationReceived(
+            msgMap.value( TARGET_KEY        ).toString(),
+            msgMap.value( ARGUMENT_KEY      ).toList(),
+            msgMap.value( INVOCATION_ID_KEY ).toString() );
+        break;
+    }
+
+    // Indicate "no error encountered" by returning a null smart pointer
+    return QSharedPointer<SignalException>();
 }
 
 const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QString &httpResponse)

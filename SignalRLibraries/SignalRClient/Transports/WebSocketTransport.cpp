@@ -277,16 +277,15 @@ void WebSocketTransport::onError(QAbstractSocket::SocketError)
 
 void WebSocketTransport::onTextMessageReceived(QString str)
 {
-    _connection->emitLogMessage("WebSocket: Message received: " + str, SignalR::Debug);
-
-    bool timedOut = false, disconnected = false;
+    //bool timedOut = false, disconnected = false;
     quint64 messageId = 0;
     _connection->updateLastKeepAlive();
 
     if(_connection->getState() != SignalR::Connected)
         _connection->changeState(_connection->getState(), SignalR::Connected);
 
-    QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, str, &timedOut, &disconnected, &messageId);
+    //QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, str, &timedOut, &disconnected, &messageId);
+    QSharedPointer<SignalException> e = TransportHelper::processMessages(_connection, str);
 
     if(e.isNull())
     {
