@@ -173,8 +173,8 @@ void ConnectionPrivate::changeState(SignalR::State oldState, SignalR::State newS
 
 bool ConnectionPrivate::ensureReconnecting()
 {
+    if( !_autoReconnect ) return false;
     changeState(SignalR::Connected, SignalR::Reconnecting);
-
     return _state == SignalR::Reconnecting;
 }
 

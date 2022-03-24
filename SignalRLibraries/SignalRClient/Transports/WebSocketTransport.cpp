@@ -67,7 +67,7 @@ void WebSocketTransport::start(QString)
 
         connect(_webSocket, SIGNAL(hostFound()), this, SLOT(onHostFound()));
         connect(_webSocket, SIGNAL(connected()), this, SLOT(onConnected()));
-        connect(_webSocket, SIGNAL(disconnected()), this, SLOT(onDisconnected()));
+        connect(_webSocket, SIGNAL(disconnected()), this, SLOT(onDisconnected()), Qt::QueuedConnection);
         connect(_webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(onError(QAbstractSocket::SocketError)));
 
         connect(_webSocket, SIGNAL(textMessageReceived(QString)), this, SLOT(onTextMessageReceived(QString)));
@@ -170,37 +170,26 @@ void WebSocketTransport::onConnected()
 
 void WebSocketTransport::onDisconnected()
 {
-    if(!_webSocket)
-    {
-        return;
-    }
+    if(!_webSocket) return;
+
     QSharedPointer<SignalException> error(
         WebSocketTransport::toSignalException(
             _webSocket->error(), _webSocket->errorString() ) );
+    _connection->onError(error);
 
     if(_webSocket->state() == QAbstractSocket::ConnectedState)
         _webSocket->close();
 
-    _connection->onError(error);
-
     if(_connection->ensureReconnecting())
     {
-        _connection->emitLogMessage("WS: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "ms", SignalR::Debug);
+        _connection->emitLogMessage(
+            "WebSocket: lost connection, try to reconnect in " +
+            QString::number(_connection->getReconnectWaitTime()) + "ms",
+            SignalR::Debug);
 
         connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
         _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
         _retryTimerTimeout.start();
-
-    }
-    else if(_connection->getAutoReconnect())
-    {
-        _connection->emitLogMessage("WebSocket: lost connection, try to reconnect in " + QString::number(_connection->getReconnectWaitTime()) + "ms", SignalR::Debug);
-
-        connect(&_retryTimerTimeout, SIGNAL(timeout()), this, SLOT(reconnectTimerTick()));
-        _retryTimerTimeout.setInterval(_connection->getReconnectWaitTime());
-        _retryTimerTimeout.start();
-
-        return;
     }
 }
 
