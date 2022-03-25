@@ -68,6 +68,12 @@ void Connection::send(const QString &data)
     d->send(data);
 }
 
+void Connection::invoke(const QString &target, const QVariantList &arguments, const QString &invocationId)
+{
+    Q_D(Connection);
+    d->invoke(target,arguments,invocationId);
+}
+
 void Connection::retry()
 {
     Q_D(Connection);

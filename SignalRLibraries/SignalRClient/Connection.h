@@ -93,6 +93,14 @@ public:
     virtual void send(const QString &data);
 
     ///
+    /// \brief Send an invocation request to the server
+    /// \param The name of the remote procedure "targeted"
+    /// \param Arguments for the remote procedure
+    /// \param A unique (for the client) id for the invocation
+    ///
+    virtual void invoke(const QString &target, const QVariantList &arguments, const QString &invocationId);
+
+    ///
     /// \brief Aborts the current retry wait, and tries to reconnect
     ///
     void retry();

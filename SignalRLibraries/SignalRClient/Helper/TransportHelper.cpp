@@ -41,9 +41,9 @@ const QByteArray EMPTY, RECORD_SEPERATOR( "\u001E" );
 
 const QString
       TYPE_KEY          ( "type"         )
-    , INVOCATION_ID_KEY ( "invocationId" )
     , TARGET_KEY        ( "target"       )
-    , ARGUMENT_KEY      ( "arguments"    )
+    , ARGUMENTS_KEY     ( "arguments"    )
+    , INVOCATION_ID_KEY ( "invocationId" )
 ;
 
 const int
@@ -216,20 +216,35 @@ QSharedPointer<SignalException> TransportHelper::processMessages(
     }
     const QVariantMap msgMap( jsonObj.toVariantMap() );
 
-    // Get the message type and conditionally react to it
+    // Get the message type, and react to it accordingly
     const int msgType( msgMap.value( TYPE_KEY, NONE_TYPE ).toInt() );
     switch( msgType )
     {
     case INVOCATION_TYPE:
         connection->onInvocationReceived(
             msgMap.value( TARGET_KEY        ).toString(),
-            msgMap.value( ARGUMENT_KEY      ).toList(),
+            msgMap.value( ARGUMENTS_KEY     ).toList(),
             msgMap.value( INVOCATION_ID_KEY ).toString() );
         break;
     }
 
     // Indicate "no error encountered" by returning a null smart pointer
     return QSharedPointer<SignalException>();
+}
+
+QString TransportHelper::getInvokeRequest(
+    const QString &target, const QVariantList &arguments,
+    const QString &invocationId )
+{
+    const QVariantMap msgMap({
+          { TYPE_KEY,          INVOCATION_TYPE }
+        , { TARGET_KEY,        target          }
+        , { ARGUMENTS_KEY,     arguments       }
+        , { INVOCATION_ID_KEY, invocationId    }
+    });
+    const QByteArray msgBytes( QJsonDocument::fromVariant( msgMap )
+                               .toJson( QJsonDocument::Compact ) );
+    return QString( msgBytes + RECORD_SEPERATOR );
 }
 
 const NegotiateResponse* TransportHelper::parseNegotiateHttpResponse(const QString &httpResponse)

@@ -49,15 +49,15 @@ public:
     TransportHelper(void);
     ~TransportHelper(void);
 
-
     static QString getReceiveQueryString(ConnectionPrivate *connection, QString transport);
-    static QSharedPointer<SignalException> processMessages(ConnectionPrivate *connection, QString raw, bool* timedOut, bool* disconnected, quint64 *messageId=0);
+    static const NegotiateResponse* parseNegotiateHttpResponse(const QString& httpResponse);
 
-    // replacement for the original...
+    static QSharedPointer<SignalException> processMessages(ConnectionPrivate *connection, QString raw, bool* timedOut, bool* disconnected, quint64 *messageId=0);
+    // replacements for the original...
     static QSharedPointer<SignalException> processMessages(ConnectionPrivate *connection, const QString &raw);
     static QSharedPointer<SignalException> processMessages(ConnectionPrivate *connection, const QByteArray &raw);
 
-    static const NegotiateResponse* parseNegotiateHttpResponse(const QString& httpResponse);
+    static QString getInvokeRequest(const QString &target, const QVariantList &arguments, const QString &invocationId);
 };
 
 }}}

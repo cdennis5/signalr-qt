@@ -125,6 +125,12 @@ void ConnectionPrivate::send(const QString &data)
     }
 }
 
+void ConnectionPrivate::invoke(const QString &target, const QVariantList &arguments, const QString &invocationId)
+{
+    const QString data(TransportHelper::getInvokeRequest(target, arguments, invocationId));
+    send(data);
+}
+
 void ConnectionPrivate::retry()
 {
     if(!_transport)

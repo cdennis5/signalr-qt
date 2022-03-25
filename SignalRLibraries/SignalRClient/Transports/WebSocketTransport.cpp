@@ -149,7 +149,7 @@ void WebSocketTransport::onConnected()
     const QByteArray handshakeRequest(
         QJsonDocument::fromVariant(handshakeRequestMap).toJson(QJsonDocument::Compact)
         + recordSeperator );
-    const int bytesWritten(_webSocket->write(handshakeRequest));
+    const qint64 bytesWritten(_webSocket->write(handshakeRequest));
     const bool isFlushed(_webSocket->flush());
     if( bytesWritten == handshakeRequest.size() && isFlushed )
     {

@@ -65,7 +65,9 @@ public:
     virtual void start(bool autoReconnect = false);
     virtual void start(ClientTransport* tranport, bool autoReconnect = false);
     virtual bool stop(int timeoutMs=0);
+
     virtual void send(const QString &data);
+    virtual void invoke(const QString &target, const QVariantList &arguments, const QString &invocationId);
 
     void retry();
 
