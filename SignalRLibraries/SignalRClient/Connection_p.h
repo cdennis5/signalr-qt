@@ -97,7 +97,11 @@ public:
     void onError(QSharedPointer<SignalException> exp);
 
     virtual void onReceived(QVariant &data);
+    void onPingReceived();
+    void onCloseReceived(const QString &errMsg, const bool allowReconnect);
     void onInvocationReceived(const QString &target, const QVariantList &arguments, const QString &invocationId);
+    void onCancelInvocationReceived(const QString &invocationId);
+    void onCompletionReceived(const QVariant &result, const QString &errMsg, const QString &invocationId);
 
     void setGroupsToken(const QString &token);
     void setMessageId(const QString &messageId);

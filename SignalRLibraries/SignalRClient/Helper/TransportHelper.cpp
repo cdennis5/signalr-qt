@@ -40,16 +40,26 @@
 const QByteArray EMPTY, RECORD_SEPERATOR( "\u001E" );
 
 const QString
-      TYPE_KEY          ( "type"         )
-    , TARGET_KEY        ( "target"       )
-    , ARGUMENTS_KEY     ( "arguments"    )
-    , INVOCATION_ID_KEY ( "invocationId" )
+      TYPE_KEY          ( "type"           )
+    , TARGET_KEY        ( "target"         )
+    , ARGUMENTS_KEY     ( "arguments"      )
+    , RESULT_KEY        ( "result"         )
+    , ERROR_KEY         ( "error"          )
+    , ALLOW_RECONN_KEY  ( "allowReconnect" )
+    , INVOCATION_ID_KEY ( "invocationId"   )
 ;
 
-const int
-      NONE_TYPE       ( -1 )
-    , INVOCATION_TYPE (  1 )
-;
+enum MessageType
+{
+    UNDEFINED,
+    invocation,
+    stream_item,
+    completion,
+    stream_invocation,
+    cancel_invocation,
+    ping,
+    close,
+};
 
 namespace P3 { namespace SignalR { namespace Client {
 
@@ -217,15 +227,57 @@ QSharedPointer<SignalException> TransportHelper::processMessages(
     const QVariantMap msgMap( jsonObj.toVariantMap() );
 
     // Get the message type, and react to it accordingly
-    const int msgType( msgMap.value( TYPE_KEY, NONE_TYPE ).toInt() );
+    const MessageType msgType( (MessageType)msgMap.value( TYPE_KEY,
+        (int)MessageType::UNDEFINED ).toInt() );
+    connection->emitLogMessage( "msgType: " + QString::number(msgType), SignalR::Debug );
     switch( msgType )
     {
-    case INVOCATION_TYPE:
+    case invocation:
         connection->onInvocationReceived(
             msgMap.value( TARGET_KEY        ).toString(),
             msgMap.value( ARGUMENTS_KEY     ).toList(),
             msgMap.value( INVOCATION_ID_KEY ).toString() );
         break;
+    case stream_item:
+        // TODO!
+        break;
+    case completion:
+        connection->onCompletionReceived(
+            msgMap.value( RESULT_KEY        ), // variant
+            msgMap.value( ERROR_KEY         ).toString(),
+            msgMap.value( INVOCATION_ID_KEY ).toString()
+        );
+        break;
+    case stream_invocation:
+        // TODO!
+        break;
+    case cancel_invocation:
+        connection->onCancelInvocationReceived(
+            msgMap.value( INVOCATION_ID_KEY ).toString()
+        );
+        break;
+    case ping:
+        connection->onPingReceived();
+        break;
+    case close:
+        connection->onCloseReceived(
+            msgMap.value( ERROR_KEY ).toString(),
+            msgMap.value( ALLOW_RECONN_KEY ).toBool()
+        );
+        return QSharedPointer<SignalException>( new SignalException(
+            msgMap.value( ERROR_KEY ).toString(),
+            SignalException::RemoteHostClosedConnection ) );
+    default:
+        if( msgMap.isEmpty() )
+            connection->emitLogMessage(
+                "Empty message received", SignalR::Info );
+        else
+        {
+            const QString errMsg( "Unknown or missing message type"
+               "\nRaw data:\n\n" + QString( raw ) );
+            return QSharedPointer<SignalException>( new SignalException(
+                errMsg, SignalException::UnkownContentError ) );
+        }
     }
 
     // Indicate "no error encountered" by returning a null smart pointer
@@ -237,10 +289,10 @@ QString TransportHelper::getInvokeRequest(
     const QString &invocationId )
 {
     const QVariantMap msgMap({
-          { TYPE_KEY,          INVOCATION_TYPE }
-        , { TARGET_KEY,        target          }
-        , { ARGUMENTS_KEY,     arguments       }
-        , { INVOCATION_ID_KEY, invocationId    }
+          { TYPE_KEY,          (int)MessageType::invocation }
+        , { TARGET_KEY,        target                       }
+        , { ARGUMENTS_KEY,     arguments                    }
+        , { INVOCATION_ID_KEY, invocationId                 }
     });
     const QByteArray msgBytes( QJsonDocument::fromVariant( msgMap )
                                .toJson( QJsonDocument::Compact ) );

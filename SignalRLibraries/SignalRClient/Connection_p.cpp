@@ -121,6 +121,7 @@ void ConnectionPrivate::send(const QString &data)
     }
     else
     {
+        emitLogMessage("sending: " + data, SignalR::Debug );
         _transport->send(data);
     }
 }
@@ -217,10 +218,37 @@ void ConnectionPrivate::onReceived(QVariant &data)
     q->onReceived(data);
 }
 
+void ConnectionPrivate::onPingReceived()
+{
+    Q_Q(Connection);
+    Q_EMIT q->pingReceived();
+}
+
+// TODO: handle allowReconnect
+void ConnectionPrivate::onCloseReceived(const QString &errMsg, const bool allowReconnect)
+{
+    Q_Q(Connection);
+    emitLogMessage("Close message received! Details: " +
+        (errMsg.trimmed().isEmpty() ? "None" : errMsg), SignalR::Error);
+    q->stop(0);
+}
+
 void ConnectionPrivate::onInvocationReceived(const QString &target, const QVariantList &arguments, const QString &invocationId)
 {
     Q_Q(Connection);
     Q_EMIT q->invocationReceived(target, arguments, invocationId);
+}
+
+void ConnectionPrivate::onCancelInvocationReceived(const QString &invocationId)
+{
+    Q_Q(Connection);
+    Q_EMIT q->cancelInvocationReceived(invocationId);
+}
+
+void ConnectionPrivate::onCompletionReceived(const QVariant &result, const QString &errMsg, const QString &invocationId)
+{
+    Q_Q(Connection);
+    Q_EMIT q->completionReceived(result, errMsg, invocationId);
 }
 
 void ConnectionPrivate::setGroupsToken(const QString &token)
