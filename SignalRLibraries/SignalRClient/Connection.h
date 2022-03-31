@@ -96,9 +96,9 @@ public:
     /// \brief Send an invocation request to the server
     /// \param The name of the remote procedure "targeted"
     /// \param Arguments for the remote procedure
-    /// \param A unique (for the client) id for the invocation
+    /// \param (Optional) a unique (for the client) id for the invocation, if omitted the server will not return a response
     ///
-    virtual void invoke(const QString &target, const QVariantList &arguments, const QString &invocationId);
+    virtual void invoke(const QString &target, const QVariantList &arguments, const QString &invocationId=QString());
 
     ///
     /// \brief Aborts the current retry wait, and tries to reconnect

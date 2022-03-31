@@ -288,12 +288,12 @@ QString TransportHelper::getInvokeRequest(
     const QString &target, const QVariantList &arguments,
     const QString &invocationId )
 {
-    const QVariantMap msgMap({
+    QVariantMap msgMap({
           { TYPE_KEY,          (int)MessageType::invocation }
         , { TARGET_KEY,        target                       }
         , { ARGUMENTS_KEY,     arguments                    }
-        , { INVOCATION_ID_KEY, invocationId                 }
     });
+    if( !invocationId.isEmpty() ) msgMap[ INVOCATION_ID_KEY ] = invocationId;
     const QByteArray msgBytes( QJsonDocument::fromVariant( msgMap )
                                .toJson( QJsonDocument::Compact ) );
     return QString( msgBytes + RECORD_SEPERATOR );
