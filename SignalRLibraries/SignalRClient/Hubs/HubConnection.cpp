@@ -35,7 +35,7 @@
 
 namespace P3 { namespace SignalR { namespace Client {
 
-HubConnection::HubConnection(const QString &url) : Connection(url), _callbacksMutex(QMutex::Recursive)
+HubConnection::HubConnection(const QString &url) : Connection(url), _callbacksMutex()
 {
 
 }

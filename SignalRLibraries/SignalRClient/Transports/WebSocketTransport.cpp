@@ -28,7 +28,7 @@ void WebSocketTransport::start(QString)
         _webSocket = new QWebSocket();
         // Better off done at this level, since the rest of the related logic is here
         //_webSocket->setAdditonalQueryString(_connection->getAdditionalQueryString());
-        _webSocket->setAddtionalHeaders(_connection->getAdditionalHttpHeaders());
+        //_webSocket->setAddtionalHeaders(_connection->getAdditionalHttpHeaders());
 #ifndef QT_NO_NETWORKPROXY
         _webSocket->setProxy(_connection->getProxySettings());
 #endif
@@ -78,7 +78,13 @@ void WebSocketTransport::start(QString)
         connect(_webSocket, SIGNAL(debugMessageAvailable(QString)), this, SLOT(onDebugMessageAvailable(QString)));
 
         _connection->emitLogMessage("websocket open url: " + url.toDisplayString(), SignalR::Info);
-        _webSocket->open(url);
+
+        auto request = QNetworkRequest(url);
+        for (QPair<QString, QString> p : _connection->getAdditionalHttpHeaders()) {
+            request.setRawHeader(p.first.toLocal8Bit(), p.second.toLocal8Bit());
+        }
+
+        _webSocket->open(request);
     }
 }
 
@@ -86,7 +92,7 @@ void WebSocketTransport::send(QString data)
 {
     if(_webSocket)
     {
-        qint64 bytesWritten = _webSocket->write(data);
+        qint64 bytesWritten = _webSocket->sendBinaryMessage(data.toLocal8Bit());
         if(bytesWritten != data.size())
         {
             _connection->emitLogMessage("Written bytes does not equals given bytes", SignalR::Warning);
@@ -149,7 +155,7 @@ void WebSocketTransport::onConnected()
     const QByteArray handshakeRequest(
         QJsonDocument::fromVariant(handshakeRequestMap).toJson(QJsonDocument::Compact)
         + recordSeperator );
-    const qint64 bytesWritten(_webSocket->write(handshakeRequest));
+    const qint64 bytesWritten(_webSocket->sendBinaryMessage(handshakeRequest));
     const bool isFlushed(_webSocket->flush());
     if( bytesWritten == handshakeRequest.size() && isFlushed )
     {

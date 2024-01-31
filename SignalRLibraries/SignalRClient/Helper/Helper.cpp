@@ -77,7 +77,7 @@ QString Helper::getEncodedQueryString(QUrl url, ConnectionPrivate *con)
         }
     }
 
-    retVal += "timestamp=" + QString::number(QDateTime::currentDateTimeUtc().toTime_t());
+    retVal += "timestamp=" + QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     //retVal.remove(retVal.length()-1, 1);
 
     return retVal;

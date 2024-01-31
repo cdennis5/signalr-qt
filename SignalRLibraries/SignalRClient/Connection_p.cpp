@@ -48,12 +48,13 @@ ConnectionPrivate::ConnectionPrivate(const QString &host, Connection *connection
     _isDefaultContextPaths(true),
     _isDefaultHttpHeaders(true),
     _isDefaultQueryStrings(true),
-    _stateLocker(QMutex::Recursive),
-    q_ptr(connection)
+    _stateLocker(),
+    q_ptr(connection),
+    _disabled(false)
 {
     _host = host;
     _state = SignalR::Disconnected;
-    _messageIdLocker = new QMutex(QMutex::Recursive);
+    _messageIdLocker = new QRecursiveMutex();
 
     qRegisterMetaType<SignalException>("SignalException");
     qRegisterMetaType<SignalR::State>("State");
@@ -163,6 +164,7 @@ const QString &ConnectionPrivate::getConnectionId() const
 
 void ConnectionPrivate::changeState(SignalR::State oldState, SignalR::State newState)
 {
+    if (_disabled) return;
     Q_Q(Connection);
     QMutexLocker l(&_stateLocker);
 
@@ -193,6 +195,7 @@ void ConnectionPrivate::setConnectionState(NegotiateResponse negotiateResponse)
 
 QString ConnectionPrivate::onSending()
 {
+    if (_disabled) return "";
     return q_ptr->onSending();
 }
 
@@ -214,6 +217,7 @@ void ConnectionPrivate::onError(QSharedPointer<SignalException> error)
 
 void ConnectionPrivate::onReceived(QVariant &data)
 {
+    if (_disabled) return;
     Q_Q(Connection);
     q->onReceived(data);
 }
@@ -316,6 +320,7 @@ KeepAliveData *ConnectionPrivate::getKeepAliveData()
 
 void ConnectionPrivate::updateLastKeepAlive()
 {
+    if (_disabled) return;
     if(_keepAliveData)
         _keepAliveData->setLastKeepAlive(QDateTime::currentDateTimeUtc());
 
@@ -325,6 +330,7 @@ void ConnectionPrivate::updateLastKeepAlive()
 
 void ConnectionPrivate::updateLastRetryTime()
 {
+    if (_disabled) return;
     _lastRetry = QDateTime::currentDateTimeUtc();
 
     Q_Q(Connection);
@@ -333,6 +339,7 @@ void ConnectionPrivate::updateLastRetryTime()
 
 void ConnectionPrivate::connectionSlow()
 {
+    if (_disabled) return;
     Q_Q(Connection);
     Q_EMIT q->onConnectionSlow();
 }
@@ -401,6 +408,7 @@ void ConnectionPrivate::negotiateCompleted(const NegotiateResponse* negotiateRes
 
 void ConnectionPrivate::emitLogMessage(QString msg, SignalR::LogSeverity severity)
 {
+    if (_disabled) return;
     Q_Q(Connection);
     Q_EMIT q->logMessage(msg, severity);
 }
@@ -439,6 +447,7 @@ void ConnectionPrivate::onRetry()
 
 void ConnectionPrivate::transportStarted(QSharedPointer<SignalException> error)
 {
+    if (_disabled) return;
     Q_Q(Connection);
     if(error.isNull())
     {
@@ -486,6 +495,7 @@ void ConnectionPrivate::transportStarted(QSharedPointer<SignalException> error)
 
 void ConnectionPrivate::transportMessageSent(QSharedPointer<SignalException> ex, quint64 messageId)
 {
+    if (_disabled) return;
     Q_Q(Connection);
     q->onMessageSentCompleted(ex, messageId);
     Q_EMIT q->messageSentCompleted(ex);

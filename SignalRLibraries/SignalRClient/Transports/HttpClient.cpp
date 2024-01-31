@@ -58,9 +58,9 @@ HttpClient::HttpClient(ConnectionPrivate *con) : _isAborting(false), _man(0)
 
     qRegisterMetaType<QMap<QString,QString> >("QMap<QString,QString>");
 
-    _getMutex = new QMutex(QMutex::Recursive);
-    _postMutex = new QMutex(QMutex::Recursive);
-    _connectionLock = new QMutex(QMutex::Recursive);
+    _getMutex = new QRecursiveMutex();
+    _postMutex = new QRecursiveMutex();
+    _connectionLock = new QRecursiveMutex();
 
     connect(_man, SIGNAL(finished(QNetworkReply*)), SLOT(requestFinished(QNetworkReply*)));
 #ifndef QT_NO_OPENSSL
@@ -103,7 +103,7 @@ void HttpClient::get(QString url)
     QUrl reqUrl = QUrl();
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
-    reqUrl.setUrl(QByteArray().append(encodedUrl));
+    reqUrl.setUrl(QByteArray().append(encodedUrl.toLocal8Bit()));
 #else
     reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
 #endif
@@ -174,7 +174,7 @@ QString HttpClient::postSync(QString url, QMap<QString, QString> arguments, QSha
     QUrl reqUrl = QUrl();
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
-    reqUrl.setUrl(QByteArray().append(encodedUrl));
+    reqUrl.setUrl(QByteArray().append(encodedUrl.toLocal8Bit()));
 #else
     reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
 #endif
@@ -196,7 +196,7 @@ QString HttpClient::postSync(QString url, QMap<QString, QString> arguments, QSha
 
     _connection->emitLogMessage("starting sync post request (" + _connection->getConnectionId() +")", SignalR::Debug);
     QNetworkAccessManager *networkMgr = new QNetworkAccessManager();
-    QNetworkReply *postReply = networkMgr->post(req, QByteArray().append(queryString));
+    QNetworkReply *postReply = networkMgr->post(req, QByteArray().append(queryString.toLocal8Bit()));
 
     QTimer t;
     t.setInterval(timeoutMs);
@@ -263,7 +263,7 @@ void HttpClient::onDoPost(QString url, QMap<QString, QString> arguments)
     QUrl reqUrl = QUrl();
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 2)
-    reqUrl.setUrl(QByteArray().append(encodedUrl));
+    reqUrl.setUrl(QByteArray().append(encodedUrl.toLocal8Bit()));
 #else
     reqUrl.setEncodedUrl(QByteArray().append(encodedUrl));
 #endif
@@ -286,7 +286,7 @@ void HttpClient::onDoPost(QString url, QMap<QString, QString> arguments)
     _connection->emitLogMessage("starting post request (" + _connection->getConnectionId() +"), active connections: " + QString::number(_currentConnections.size()+1), SignalR::Debug);
     _connection->emitLogMessage("post request url %s" + QString::fromUtf8(reqUrl.toEncoded()), SignalR::Trace);
 
-    QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString));
+    QNetworkReply *postReply = _man->post(req, QByteArray().append(queryString.toLocal8Bit()));
 
 #ifndef QT_NO_SSL
     postReply->setSslConfiguration(_connection->getSslConfiguration());

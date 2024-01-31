@@ -92,9 +92,9 @@ private:
     bool _getInProgress;
     bool _isAborting;
     QNetworkAccessManager *_man;
-    QMutex *_getMutex;
-    QMutex *_postMutex;
-    QMutex *_connectionLock;
+    QRecursiveMutex *_getMutex;
+    QRecursiveMutex *_postMutex;
+    QRecursiveMutex *_connectionLock;
     ConnectionPrivate *_connection;
 
     QList<QNetworkReply*> _currentConnections;

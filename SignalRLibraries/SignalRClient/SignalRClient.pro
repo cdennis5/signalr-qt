@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT += network
+QT += network websockets
 
 QT -= gui
 
@@ -83,9 +83,9 @@ else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtExtJson/ -lQextJson
 INCLUDEPATH += $$PWD/../../ThirdParty/QtExtJson
 DEPENDPATH += $$PWD/../../ThirdParty/QtExtJson
 
-win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtWebSockets/src/websockets/release/ -lQtWebSockets
-else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtWebSockets/src/websockets/debug/ -lQtWebSockets
-else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtWebSockets/src/websockets/ -lQtWebSockets
+#win32:CONFIG(release, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtWebSockets/src/websockets/release/ -lQtWebSockets
+#else:win32:CONFIG(debug, debug|release): LIBS += -L$$OUT_PWD/../../ThirdParty/QtWebSockets/src/websockets/debug/ -lQtWebSockets
+#else:unix: LIBS += -L$$OUT_PWD/../../ThirdParty/QtWebSockets/src/websockets/ -lQtWebSockets
 
-INCLUDEPATH += $$PWD/../../ThirdParty/QtWebSockets/src/websockets
-DEPENDPATH += $$PWD/../../ThirdParty/QtWebSockets/src/websockets
+#INCLUDEPATH += $$PWD/../../ThirdParty/QtWebSockets/src/websockets
+#DEPENDPATH += $$PWD/../../ThirdParty/QtWebSockets/src/websockets

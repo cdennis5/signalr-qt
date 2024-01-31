@@ -68,7 +68,7 @@ void HttpEventStreamParserTest::testMultiPacketInMultipleChunks()
     foreach (QChar  c, QByteArray("3\r\nxyz5\r\nabc\n"))
     {
         QByteArray arr;
-        arr.append(c);
+        arr.append(c.toLatin1());
         p.addData(arr);
         QCOMPARE(p.next(r), false);
         QCOMPARE(r.error.isNull(), true);

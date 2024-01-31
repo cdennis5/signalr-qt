@@ -69,6 +69,8 @@ public:
     virtual void send(const QString &data);
     virtual void invoke(const QString &target, const QVariantList &arguments, const QString &invocationId);
 
+    void disable() { _disabled = true; }
+
     void retry();
 
     SignalR::State getState();
@@ -207,8 +209,8 @@ private:
     bool _isDefaultQueryStrings;
 
     HeartbeatMonitor *_monitor;
-    QMutex _stateLocker;
-    QMutex *_messageIdLocker;
+    QRecursiveMutex _stateLocker;
+    QRecursiveMutex *_messageIdLocker;
 
 #ifndef QT_NO_NETWORKPROXY
     QNetworkProxy _proxySettings;
@@ -226,6 +228,7 @@ private:
     int _messageRepeatReconAmount;
 
     QDateTime _lastRetry;
+    bool _disabled;
 };
 
 }}}

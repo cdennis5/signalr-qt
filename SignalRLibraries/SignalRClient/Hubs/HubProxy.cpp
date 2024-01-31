@@ -362,7 +362,7 @@ void HubProxy::send(const QString &data, const QString &id, HubCallback *c)
     _connection->send(data, id, c);
 }
 
-QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString &val)
+QMetaMethodArgument HubProxy::getGenericArgument(const QString &type, const QString &val)
 {
     if(type == "QString")
     {
@@ -370,53 +370,63 @@ QGenericArgument HubProxy::getGenericArgument(const QString &type, const QString
     }
     else if(type == "int")
     {
-        int* intVal = new int(val.toInt());
-        return Argument("int", intVal);
+        // int* intVal = new int(val.toInt());
+        // return Argument("int", intVal);
+        return Q_ARG(int, val.toInt());
     }
     else if(type == "float")
     {
-        float* floatVal = new float(val.toFloat());
-        return Argument("float", (void*)floatVal);
+        // float* floatVal = new float(val.toFloat());
+        // return Argument("float", (void*)floatVal);
+        return Q_ARG(float, val.toFloat());
     }
     else if(type == "double")
     {
-        double* tVal = new double(val.toDouble());
-        return Argument("double", tVal);
+        // double* tVal = new double(val.toDouble());
+        // return Argument("double", tVal);
+        return Q_ARG(double, val.toDouble());
     }
     else if(type == "short")
     {
-        auto* tVal = new short(val.toShort());
-        return Argument("short", tVal);
+        // auto* tVal = new short(val.toShort());
+        // return Argument("short", tVal);
+        return Q_ARG(short, val.toShort());
     }
     else if(type == "ushort")
     {
-        auto* tVal = new short(val.toUShort());
-        return Argument("ushort", tVal);
+        // auto* tVal = new short(val.toUShort());
+        // return Argument("ushort", tVal);
+        return Q_ARG(ushort, val.toUShort());
     }
     else if(type == "uint")
     {        
-        auto* tVal = new short(val.toUInt());
-        return Argument("uint", tVal);
+        // auto* tVal = new short(val.toUInt());
+        // return Argument("uint", tVal);
+        return Q_ARG(uint, val.toUInt());
     }
     else if(type == "long")
     {
-        auto* tVal = new short(val.toLong());
-        return Argument("long", tVal);
+        // auto* tVal = new short(val.toLong());
+        // return Argument("long", tVal);
+        return Q_ARG(long, val.toLong());
     }
     else if(type == "ulong")
     {
-        auto* tVal = new short(val.toULong());
-        return Argument("ulong", tVal);
+        // auto* tVal = new short(val.toULong());
+        // return Argument("ulong", tVal);
+        return Q_ARG(ulong, val.toULong());
     }
     else if(type == "qlonglong" || type == "long long" || type == "qint64")
     {
-        auto* tVal = new short(val.toLongLong());
-        return Argument("longlong", tVal);
+        // auto* tVal = new short(val.toLongLong());
+        // return Argument("longlong", tVal);
+        return Q_ARG(qlonglong, val.toLongLong());
     }
     else if(type == "qulonglong" || type == "unsigned long long" || type == "quint64")
     {
-        auto* tVal = new short(val.toULongLong());
-        return Argument("ulonglong", tVal);
+        // auto* tVal = new short(val.toULongLong());
+        // return Argument("ulonglong", tVal);
+        return Q_ARG(qulonglong, val.toULongLong());
     }
 
 

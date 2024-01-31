@@ -47,7 +47,7 @@ Connection::Connection(const QString &host) :
 
 Connection::~Connection()
 {
-
+    d_ptr->disable();
 }
 
 void Connection::start(bool autoReconnect)

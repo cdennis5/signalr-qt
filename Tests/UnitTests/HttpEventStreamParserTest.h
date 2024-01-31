@@ -1,6 +1,7 @@
 #ifndef HTTPEVENTSTREAMPARSERTEST_H
 #define HTTPEVENTSTREAMPARSERTEST_H
 
+#include <QObject>
 #include <Transports/HttpEventStreamParser.h>
 
 

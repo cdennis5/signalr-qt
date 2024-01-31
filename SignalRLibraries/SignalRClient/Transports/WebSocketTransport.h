@@ -2,7 +2,8 @@
 #define WEBSOCKETTRANSPORT_H
 
 #include "HttpBasedTransport.h"
-#include <qwebsocket.h>
+//#include <qwebsocket.h>
+#include <QWebSocket>
 #include "Connection.h"
 #include "Helper/TransportHelper.h"
 #include <QTimer>

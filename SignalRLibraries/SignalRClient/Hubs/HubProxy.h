@@ -75,7 +75,7 @@ Q_SIGNALS:
     void hubMethodCalled(const QString &method, const QVariantList &args);
 
 private:
-    QGenericArgument getGenericArgument(const QString &type, const QString& val);
+    QMetaMethodArgument getGenericArgument(const QString &type, const QString& val);
 
 private:
     QList<QObject*> _objectsToInvoke;

@@ -1,6 +1,3 @@
-[submodule "ThirdParty/QtWebSockets"]
-	path = ThirdParty/QtWebSockets
-	url = https://github.com/QDroneDev/QtWebSocket.git
 [submodule "ThirdParty/QHttpServer"]
 	path = ThirdParty/QHttpServer
 	url = https://github.com/QDroneDev/qhttpserver.git

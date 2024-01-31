@@ -69,7 +69,7 @@ protected:
 
 private:
     QMap<QString, HubCallback*> _callbacks;
-    QMutex _callbacksMutex;
+    QRecursiveMutex _callbacksMutex;
 
 };
 

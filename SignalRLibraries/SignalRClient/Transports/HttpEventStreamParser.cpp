@@ -44,7 +44,7 @@ bool HttpEventStreamParser::next(HttpEventStreamParserResult &result)
             index = data.indexOf("\r\n");
             data = data.remove(index, data.count() - index);
             _packageBuffer.clear();
-            result.packet = QByteArray().append(data);
+            result.packet = QByteArray().append(data.toLocal8Bit());
             return true;
         }
 
@@ -57,7 +57,7 @@ bool HttpEventStreamParser::next(HttpEventStreamParserResult &result)
         if (_packageBuffer.isEmpty() || !getNextPacketLength())
             return false;
 
-        int bytesToUse = std::min(_packageBuffer.size(), _curPackageLeftToRead);
+        int bytesToUse = std::min(_packageBuffer.size(), static_cast<qsizetype>(_curPackageLeftToRead));
         _curPackage.append(_packageBuffer.constData(), bytesToUse);
 
         _packageBuffer.remove(0, bytesToUse);
