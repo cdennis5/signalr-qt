@@ -1,3 +1,3 @@
 [submodule "ThirdParty/QHttpServer"]
 	path = ThirdParty/QHttpServer
-	url = https://github.com/QDroneDev/qhttpserver.git
+	url = https://github.com/cdennis5/qhttpserver.git
